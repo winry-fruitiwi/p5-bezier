@@ -20,15 +20,12 @@ version comments draft
         drag and drop demo
         add hover effect
         transfer drag and drop code into p5-bezier
-    Cody's super advanced project:
+    My super advanced project:
         <all caps> particle split upon contact!! <end all caps>
 
  */
 let font
-let a
-let b
-let c
-let d
+let a, b, c, d, p1, p2, t
 
 function preload() {
     font = loadFont('fonts/Meiryo-01.ttf')
@@ -40,12 +37,45 @@ function setup() {
     a = new p5.Vector(0, height/2)
     c = new p5.Vector(400, 300)
     d = new p5.Vector(width, height/2)
+    p1 = new p5.Vector(random(50, 100), random(height));
+    p2 = new p5.Vector(random(width-100, width-50), random(height));
+
 }
 
 function draw() {
     background(209, 80, 30)
     // we can get the beziers now!
-    bezier_example()
+    // bezier_example()
+
+    t = map(constrain(mouseX, p1.x, p2.x),
+        p1.x, p2.x,
+        0, 1);
+
+    stroke(0, 0, 100)
+
+    // where are the lerp points?
+    strokeWeight(8)
+    point(p1.x, p1.y)
+    point(p2.x, p2.y)
+
+    // We should see a line between the two points so that
+    // we can effectively test where our lerp should go.
+    strokeWeight(1)
+    line(p1.x, p1.y, p2.x, p2.y)
+
+    // Now we can draw the lerp in a different color, above
+    // everything else.
+    strokeWeight(8)
+    stroke(0, 80, 80);
+    let lerp_item = wlerp2D(p1, p2, t)
+    point(lerp_item.x, lerp_item.y)
+
+    // let's test wlerp! Print to the console whether
+    // my lerp is the same as p5.js lerp functions.
+    if (wlerp2D(p1, p2, t).x !== p5.Vector.lerp(p1, p2, t).x &&
+        wlerp2D(p1, p2, t).y !== p5.Vector.lerp(p1, p2, t).y) {
+        console.log("beep beep!")
+    }
 }
 
 
@@ -56,6 +86,7 @@ function bezier_example() {
     noFill()
     // if (stroke == black) {you cannot see, and that's bad}
     stroke(0, 0, 100)
+    strokeWeight(1)
     // this is where we actually draw the bezier!
     bezier(a.x, a.y,
            b.x, b.y,
@@ -66,4 +97,17 @@ function bezier_example() {
     circle(b.x, b.y, 8)
     circle(c.x, c.y, 8)
     circle(d.x, d.y, 8)
+}
+
+// stands for winry's lerp
+function wlerp(p1, p2, t) {
+    // p1 is the start point. p2 is the end point.
+    // t is the lerp percentage. Lerp around with t!
+    return (1 - t)*p1 + (t)*p2
+}
+
+// stands for winry's p5.vector lerp
+function wlerp2D(p1, p2, t) { // first two arguments are vectors
+    return new p5.Vector(wlerp(p1.x, p2.x, t),
+                         wlerp(p1.y, p2.y, t))
 }
