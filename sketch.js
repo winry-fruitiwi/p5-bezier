@@ -27,9 +27,11 @@ version comments draft
 let font
 let a, b, c, d, p1, p2, t
 
+
 function preload() {
     font = loadFont('fonts/Meiryo-01.ttf')
 }
+
 
 function setup() {
     createCanvas(640, 360)
@@ -41,6 +43,7 @@ function setup() {
     p2 = new p5.Vector(random(width-100, width-50), random(height));
 
 }
+
 
 function draw() {
     background(209, 80, 30)
@@ -76,6 +79,18 @@ function draw() {
         wlerp2D(p1, p2, t).y !== p5.Vector.lerp(p1, p2, t).y) {
         console.log("beep beep!")
     }
+    // mouseX and mouseY doesn't exist before the program
+    // starts, and even if it did, we would not
+    // be able to update it every frame.
+    b = new p5.Vector(mouseX, mouseY)
+
+    // Let's see what happens with the bezier example!
+    strokeWeight(3)
+    // The fill is way too bright!
+    noFill()
+    // where's the mouse?
+    point(mouseX, mouseY)
+    quadratic_bezier(a, b, d)
 }
 
 
@@ -102,12 +117,35 @@ function bezier_example() {
 // stands for winry's lerp
 function wlerp(p1, p2, t) {
     // p1 is the start point. p2 is the end point.
-    // t is the lerp percentage. Lerp around with t!
+    // t is the lerp percentage. Lerp around
     return (1 - t)*p1 + (t)*p2
 }
+
 
 // stands for winry's p5.vector lerp
 function wlerp2D(p1, p2, t) { // first two arguments are vectors
     return new p5.Vector(wlerp(p1.x, p2.x, t),
                          wlerp(p1.y, p2.y, t))
+}
+
+// makes a quadratic lerp function
+function quadratic_bezier(p1, p2, p3) {
+    // we'll iterate using a certain t-value between
+    // p1 and p2 using a for loop.
+
+    beginShape()
+    for (let t = 0; t < 1.0; t += 0.005) {
+        // we lerp between the first two points, or
+        // the first anchor point and the control point
+        let l1 = wlerp2D(p1, p2, t);
+        // then between the second two points, or
+        // the control point and second anchor point
+        let l2 = wlerp2D(p2, p3, t);
+        // and now between l1 and l2.
+        let l3 = wlerp2D(l1, l2, t);
+        // now we draw a point there!
+        vertex(l3.x, l3.y)
+    }
+    endShape()
+
 }
