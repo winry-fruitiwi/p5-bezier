@@ -86,34 +86,100 @@ class Quadratic_Bezier_Example {
         noFill()
         // where's the mouse?
         point(mouseX, mouseY)
-        quadratic_bezier(this.a, b, this.d)
+        cubic_bezier(this.a, b, this.c, this.d)
     }
 
 
 }
 
+
+//
 class Cubic_Bezier_Example {
     constructor() {
         // don't forget the this dots ♪ ♫ ♬
+        this.a = new p5.Vector(0, height/2)
+        this.c = new p5.Vector(300, 400)
+        this.d = new p5.Vector(width, height/2)
+        this.t = 1
+        // How are we going to animate with sine waves? Using an angle!
+    }
+
+    // makes a cubic bezier drawing!
+    cubic_bezier(p1, p2, p3, p4) { // all of these are PVectors!
+        // we'll iterate using a certain t-value between
+        // 0 and 1 using a for loop
+
+        beginShape()
+        for (let t = 0; t < 1.005; t += 0.0005) {
+            // we lerp between the first two points, or
+            // the first anchor point and the control point
+            let l1 = wlerp2D(p1, p2, t);
+            // then between the second two points, or
+            // the control point and second control point
+            let l2 = wlerp2D(p2, p3, t);
+            // and now between p3 and p4.
+            let l3 = wlerp2D(p3, p4, t);
+            // and then between l1 and l2!
+            let l4 = wlerp2D(l1, l2, t);
+            // to stretch it further: go between l2 and l3! O.o
+            let l5 = wlerp2D(l2, l3, t);
+            // We are done! l4 and l5.
+            let l6 = wlerp2D(l4, l5, t);
+
+            // now we draw a point at l6!
+            vertex(l6.x, l6.y)
+        }
+        endShape()
+
     }
 
     draw() {
-        
+        background(209, 80, 30)
+
+        // let's test wlerp! Print to the console whether
+        // my lerp is the same as p5.js lerp functions.
+
+        // mouseX and mouseY doesn't exist before the program
+        // starts, and even if it did, we would not
+        // be able to update it every frame.
+        let b = new p5.Vector(mouseX, mouseY)
+
+        // Let's see what happens with the bezier example!
+        strokeWeight(3)
+        // The fill is way too bright!
+        noFill()
+        // where's the mouse?
+        point(mouseX, mouseY)
+        // where's the second control point, too?
+        point(this.c.x, this.c.y)
+
+        // This was just a test to help me figure out why my function
+        // was incorrect.
+        // stroke(0, 100, 100)
+        // bezier(this.a.x, this.a.y,
+        //        b.x, b.y,
+        //        this.c.x, this.c.y,
+        //        this.d.x, this.d.y)
+        stroke(0, 0, 100)
+
+        this.cubic_bezier(this.a, this.c, b, this.d)
+
+
     }
 }
 
-let quad_example
+let cubic_example
 
 function setup() {
     createCanvas(640, 360)
     colorMode(HSB, 360, 100, 100, 100)
 
-    // quad_example = new Quadratic_Bezier_Example()
+    cubic_example = new Cubic_Bezier_Example()
 }
 
 
 function draw() {
-    // quad_example.draw()
+    cubic_example.draw()
 }
 
 
@@ -154,7 +220,7 @@ function wlerp2D(p1, p2, t) { // first two arguments are vectors
 // makes a quadratic lerp function
 function quadratic_bezier(p1, p2, p3) {
     // we'll iterate using a certain t-value between
-    // p1 and p2 using a for loop.
+    // 0 and 1 using a for loop
 
     beginShape()
     for (let t = 0; t < 1.0; t += 0.005) {
