@@ -30,6 +30,70 @@ function preload() {
     font = loadFont('fonts/Meiryo-01.ttf')
 }
 
+// this vertex class just bounces on the edges. Really should be in a different
+// file to this one, but it's ok for now.
+class Vertex extends p5.Vector {
+    constructor(x, y) {
+        super(x, y);
+
+        // how fast and in what direction is the object moving?
+        this.vel = p5.Vector.random2D().mult(random(2, 6))
+        // is the object accelerating, and in what direction and magnitude?
+        this.acc = new p5.Vector();
+    }
+
+    // shows the particle as a point.
+    show() {
+        stroke(0, 0, 255)
+        strokeWeight(10);
+        point(this.x, this.y)
+        strokeWeight(3)
+    }
+
+    // updates the particle's position, velocity, and acceleration.
+    update() {
+        this.add(this.vel)
+        this.vel.add(this.acc)
+        this.acc.mult(0) // otherwise the object will infinitely speed up!
+    }
+
+    // what happens if we apply a force? Features Newton's Second Law.
+    applyForce(f) { // f is a p5.Vector
+        // F = ma, but m = 1 so F = a
+        this.acc.add(f)
+    }
+
+    // now we need to make them bounce! That's the whole point of the last
+    // functions other than applyForce and it's our goal.
+    edges() {
+        // right edge
+        if (this.x > width) {
+            this.x = width
+            this.vel.x *= -1
+        }
+
+        // left edge
+        if (this.x < 0) {
+            this.x = 0
+            this.vel.x *= -1
+        }
+
+        // bottom edge
+        if (this.y > height) {
+            this.y = height
+            this.vel.y *= -1
+        }
+
+        // top edge
+        if (this.y < 0) {
+            this.y = 0
+            this.vel.y *= -1
+        }
+    }
+
+}
+
+
 // fully encapsulates an example of a quadratic bezier
 class Quadratic_Bezier_Example {
     constructor() {
@@ -93,14 +157,15 @@ class Quadratic_Bezier_Example {
 }
 
 
-//
+// encapsulates an example of a cubic bezier, except the vertices bounce!
 class Cubic_Bezier_Example {
     constructor() {
         // don't forget the this dots ♪ ♫ ♬
-        this.a = new p5.Vector(0, height/2)
-        this.c = new p5.Vector(300, 400)
-        this.d = new p5.Vector(width, height/2)
+        this.a = new Vertex(0, height/2)
+        this.c = new Vertex(0, 0)
+        this.d = new Vertex(width, height/2)
         this.t = 1
+        this.b = new Vertex(10, 10)
         // How are we going to animate with sine waves? Using an angle!
     }
 
@@ -126,10 +191,17 @@ class Cubic_Bezier_Example {
             // We are done! l4 and l5.
             let l6 = wlerp2D(l4, l5, t);
 
-            // now we draw a point at l6!
+            // now we draw a point at l6! We'll also make lines from
+            // each control point.
+            strokeWeight(3)
             vertex(l6.x, l6.y)
+
         }
         endShape()
+        strokeWeight(1)
+        line(p1.x, p1.y, p2.x, p2.y)
+        line(p2.x, p2.y, p3.x, p3.y)
+        line(p3.x, p3.y, p4.x, p4.y)
 
     }
 
@@ -142,16 +214,17 @@ class Cubic_Bezier_Example {
         // mouseX and mouseY doesn't exist before the program
         // starts, and even if it did, we would not
         // be able to update it every frame.
-        let b = new p5.Vector(mouseX, mouseY)
+        // Taking this out just for a test.
+        // let b = new Vertex(mouseX, mouseY)
 
         // Let's see what happens with the bezier example!
         strokeWeight(3)
         // The fill is way too bright!
         noFill()
         // where's the mouse?
-        point(mouseX, mouseY)
+        // point(mouseX, mouseY)
         // where's the second control point, too?
-        point(this.c.x, this.c.y)
+        // point(this.c.x, this.c.y)
 
         // This was just a test to help me figure out why my function
         // was incorrect.
@@ -161,8 +234,33 @@ class Cubic_Bezier_Example {
         //        this.c.x, this.c.y,
         //        this.d.x, this.d.y)
         stroke(0, 0, 100)
+        this.a.update()
+        this.b.update()
+        this.c.update()
+        this.d.update()
 
-        this.cubic_bezier(this.a, this.c, b, this.d)
+        this.a.show()
+        this.b.show()
+        this.c.show()
+        this.d.show()
+
+        // let gravity = new p5.Vector(0, 0.1);
+
+        // A test. That was pretty amusing because the bezier fell!
+        // this.a.applyForce(gravity)
+        // this.b.applyForce(gravity)
+        // this.c.applyForce(gravity)
+        // this.d.applyForce(gravity)
+
+        this.a.edges()
+        this.b.edges()
+        this.c.edges()
+        this.d.edges()
+
+        console.log(frameRate())
+
+
+        this.cubic_bezier(this.a, this.b, this.c, this.d)
 
 
     }
