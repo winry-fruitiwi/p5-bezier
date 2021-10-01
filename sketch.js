@@ -25,72 +25,10 @@ version comments draft
 
  */
 let font
+let vertices = []
 
 function preload() {
     font = loadFont('fonts/Meiryo-01.ttf')
-}
-
-// this vertex class just bounces on the edges. Really should be in a different
-// file to this one, but it's ok for now.
-class Vertex extends p5.Vector {
-    constructor(x, y) {
-        super(x, y);
-
-        // how fast and in what direction is the object moving?
-        this.vel = p5.Vector.random2D().mult(random(2, 6))
-        // is the object accelerating, and in what direction and magnitude?
-        this.acc = new p5.Vector();
-    }
-
-    // shows the particle as a point.
-    show() {
-        stroke(0, 0, 255)
-        strokeWeight(10);
-        point(this.x, this.y)
-        strokeWeight(3)
-    }
-
-    // updates the particle's position, velocity, and acceleration.
-    update() {
-        this.add(this.vel)
-        this.vel.add(this.acc)
-        this.acc.mult(0) // otherwise the object will infinitely speed up!
-    }
-
-    // what happens if we apply a force? Features Newton's Second Law.
-    applyForce(f) { // f is a p5.Vector
-        // F = ma, but m = 1 so F = a
-        this.acc.add(f)
-    }
-
-    // now we need to make them bounce! That's the whole point of the last
-    // functions other than applyForce and it's our goal.
-    edges() {
-        // right edge
-        if (this.x > width) {
-            this.x = width
-            this.vel.x *= -1
-        }
-
-        // left edge
-        if (this.x < 0) {
-            this.x = 0
-            this.vel.x *= -1
-        }
-
-        // bottom edge
-        if (this.y > height) {
-            this.y = height
-            this.vel.y *= -1
-        }
-
-        // top edge
-        if (this.y < 0) {
-            this.y = 0
-            this.vel.y *= -1
-        }
-    }
-
 }
 
 
@@ -103,6 +41,28 @@ class Quadratic_Bezier_Example {
         this.p1 = new p5.Vector(random(50, 100), random(height));
         this.p2 = new p5.Vector(random(width-100, width-50), random(height));
         this.t = 1
+    }
+
+    // makes a quadratic lerp function
+    quadratic_bezier(p1, p2, p3) {
+        // we'll iterate using a certain t-value between
+        // 0 and 1 using a for loop
+
+        beginShape()
+        for (let t = 0; t < 1.0; t += 0.005) {
+            // we lerp between the first two points, or
+            // the first anchor point and the control point
+            let l1 = wlerp2D(p1, p2, t);
+            // then between the second two points, or
+            // the control point and second anchor point
+            let l2 = wlerp2D(p2, p3, t);
+            // and now between l1 and l2.
+            let l3 = wlerp2D(l1, l2, t);
+            // now we draw a point there!
+            vertex(l3.x, l3.y)
+        }
+        endShape()
+
     }
 
     draw() {
@@ -150,23 +110,53 @@ class Quadratic_Bezier_Example {
         noFill()
         // where's the mouse?
         point(mouseX, mouseY)
-        cubic_bezier(this.a, b, this.c, this.d)
+        quadratic_bezier(this.a, b, this.c,)
     }
 
 
 }
 
+function mousePressed() { // bug: doesn't coordinate with mouseMoved at all!
+    let numPressed = 0;
+    for (let vertex of vertices) {
+        // oh no... have I been clicked? /scared
+        if (vertex.contains(mouseX, mouseY)) {
+            // I've been clicked and I'm about to flip my face! - Egloo :D » D:
+            // console.log("I've been clicked!!")
+            vertex.pressed(mouseX, mouseY)
+            numPressed++
+        }
+    }
+    console.log(numPressed)
+}
+
+
+// call all our Vertices and make sure they know nothing's clicking them
+function mouseReleased() {
+    for (let vertex of vertices) {
+        // now we can all get back to relaxing without that bully of a mouse!
+        vertex.notPressed()
+    }
+}
+
+
+function mouseMoved() {
+    // are we hovering on any of the points? Sadly this scares points.
+    for (let vertex of vertices) {
+        vertex.hovering = !!vertex.contains(mouseX, mouseY);
+    }
+
+}
 
 // encapsulates an example of a cubic bezier, except the vertices bounce!
 class Cubic_Bezier_Example {
     constructor() {
         // don't forget the this dots ♪ ♫ ♬
-        this.a = new Vertex(0, height/2)
-        this.c = new Vertex(0, 0)
-        this.d = new Vertex(width, height/2)
-        this.t = 1
-        this.b = new Vertex(10, 10)
-        // How are we going to animate with sine waves? Using an angle!
+        for (let i = 0; i < 4; i++) {
+            vertices.push(new draggableVertex(random(width),
+                                                random(height),
+                                                10))
+        }
     }
 
     // makes a cubic bezier drawing!
@@ -174,8 +164,9 @@ class Cubic_Bezier_Example {
         // we'll iterate using a certain t-value between
         // 0 and 1 using a for loop
 
+        noFill()
         beginShape()
-        for (let t = 0; t < 1.005; t += 0.0005) {
+        for (let t = 0; t < 1.005; t += 0.005) {
             // we lerp between the first two points, or
             // the first anchor point and the control point
             let l1 = wlerp2D(p1, p2, t);
@@ -184,10 +175,12 @@ class Cubic_Bezier_Example {
             let l2 = wlerp2D(p2, p3, t);
             // and now between p3 and p4.
             let l3 = wlerp2D(p3, p4, t);
+
             // and then between l1 and l2!
             let l4 = wlerp2D(l1, l2, t);
             // to stretch it further: go between l2 and l3! O.o
             let l5 = wlerp2D(l2, l3, t);
+
             // We are done! l4 and l5.
             let l6 = wlerp2D(l4, l5, t);
 
@@ -208,23 +201,10 @@ class Cubic_Bezier_Example {
     draw() {
         background(209, 80, 30)
 
-        // let's test wlerp! Print to the console whether
-        // my lerp is the same as p5.js lerp functions.
-
-        // mouseX and mouseY doesn't exist before the program
-        // starts, and even if it did, we would not
-        // be able to update it every frame.
-        // Taking this out just for a test.
-        // let b = new Vertex(mouseX, mouseY)
-
         // Let's see what happens with the bezier example!
         strokeWeight(3)
         // The fill is way too bright!
         noFill()
-        // where's the mouse?
-        // point(mouseX, mouseY)
-        // where's the second control point, too?
-        // point(this.c.x, this.c.y)
 
         // This was just a test to help me figure out why my function
         // was incorrect.
@@ -234,37 +214,16 @@ class Cubic_Bezier_Example {
         //        this.c.x, this.c.y,
         //        this.d.x, this.d.y)
         stroke(0, 0, 100)
-        this.a.update()
-        this.b.update()
-        this.c.update()
-        this.d.update()
-
-        this.a.show()
-        this.b.show()
-        this.c.show()
-        this.d.show()
-
-        // let gravity = new p5.Vector(0, 0.1);
-
-        // A test. That was pretty amusing because the bezier fell!
-        // this.a.applyForce(gravity)
-        // this.b.applyForce(gravity)
-        // this.c.applyForce(gravity)
-        // this.d.applyForce(gravity)
-
-        this.a.edges()
-        this.b.edges()
-        this.c.edges()
-        this.d.edges()
-
-        console.log(frameRate())
 
 
-        this.cubic_bezier(this.a, this.b, this.c, this.d)
+        for (let vertex of vertices) {
+            vertex.show(mouseX, mouseY)
+        }
 
-
+        this.cubic_bezier(vertices[0], vertices[1], vertices[2], vertices[3])
     }
 }
+
 
 let cubic_example
 
@@ -313,26 +272,4 @@ function wlerp(p1, p2, t) {
 function wlerp2D(p1, p2, t) { // first two arguments are vectors
     return new p5.Vector(wlerp(p1.x, p2.x, t),
                          wlerp(p1.y, p2.y, t))
-}
-
-// makes a quadratic lerp function
-function quadratic_bezier(p1, p2, p3) {
-    // we'll iterate using a certain t-value between
-    // 0 and 1 using a for loop
-
-    beginShape()
-    for (let t = 0; t < 1.0; t += 0.005) {
-        // we lerp between the first two points, or
-        // the first anchor point and the control point
-        let l1 = wlerp2D(p1, p2, t);
-        // then between the second two points, or
-        // the control point and second anchor point
-        let l2 = wlerp2D(p2, p3, t);
-        // and now between l1 and l2.
-        let l3 = wlerp2D(l1, l2, t);
-        // now we draw a point there!
-        vertex(l3.x, l3.y)
-    }
-    endShape()
-
 }
