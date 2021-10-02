@@ -117,17 +117,17 @@ class Quadratic_Bezier_Example {
 }
 
 function mousePressed() { // bug: doesn't coordinate with mouseMoved at all!
-    let numPressed = 0;
+    // let numPressed = 0;
     for (let vertex of vertices) {
         // oh no... have I been clicked? /scared
         if (vertex.contains(mouseX, mouseY)) {
             // I've been clicked and I'm about to flip my face! - Egloo :D » D:
             // console.log("I've been clicked!!")
             vertex.pressed(mouseX, mouseY)
-            numPressed++
+            // numPressed++
         }
     }
-    console.log(numPressed)
+    // console.log(numPressed)
 }
 
 
@@ -165,10 +165,58 @@ class Cubic_Bezier_Example {
         // 0 and 1 using a for loop
 
         let A, B, C, D, E, P
+        let t = abs(sin(frameCount/100))
+        fill(209, 80, 30)
+
+        
+
+        // we lerp between the first two points, or
+        // the first anchor point and the control point
+        A = wlerp2D(p1, p2, t);
+        // then between the second two points, or
+        // the control point and second control point
+        B = wlerp2D(p2, p3, t);
+        // and now between p3 and p4.
+        C = wlerp2D(p3, p4, t);
+
+        // and then between l1 and l2!
+        D = wlerp2D(A, B, t);
+        // to stretch it further: go between l2 and l3! O.o
+        E = wlerp2D(B, C, t);
+
+        // We are done! l4 and l5.
+        P = wlerp2D(D, E, t);
+
+        strokeWeight(1)
+        stroke(100, 0, 100)
+        line(p1.x, p1.y, p2.x, p2.y)
+        line(p2.x, p2.y, p3.x, p3.y)
+        line(p3.x, p3.y, p4.x, p4.y)
+
+        strokeWeight(2)
+
+        stroke(201, 68, 97)
+        line(A.x, A.y, B.x, B.y)
+        line(B.x, B.y, C.x, C.y)
+
+        stroke(341, 83, 81)
+        line(D.x, D.y, E.x, E.y)
+
+        strokeWeight(3)
+        stroke(201, 68, 97)
+        fill(209, 80, 30)
+        circle(A.x, A.y, 13)
+        circle(B.x, B.y, 13)
+        circle(C.x, C.y, 13)
+
+        stroke(341, 83, 81)
+        circle(D.x, D.y, 13)
+        circle(E.x, E.y, 13)
 
         noFill()
+        stroke(0, 0, 100)
         beginShape()
-        for (let t = 0; t < abs(sin(frameCount/100)); t += 0.001) {
+        for (t = 0; t < abs(sin(frameCount/100)); t += 0.001) {
             // we lerp between the first two points, or
             // the first anchor point and the control point
             A = wlerp2D(p1, p2, t);
@@ -191,35 +239,12 @@ class Cubic_Bezier_Example {
             strokeWeight(3)
             vertex(P.x, P.y)
         }
-
         endShape()
-        strokeWeight(1)
-        stroke(201, 68, 97)
-        line(A.x, A.y, B.x, B.y)
-        line(B.x, B.y, C.x, C.y)
 
-        stroke(341, 83, 81)
-        line(D.x, D.y, E.x, E.y)
-
-        strokeWeight(1)
-        stroke(100, 0, 100)
-        line(p1.x, p1.y, p2.x, p2.y)
-        line(p2.x, p2.y, p3.x, p3.y)
-        line(p3.x, p3.y, p4.x, p4.y)
-
-        strokeWeight(3)
-        stroke(201, 68, 97)
         fill(209, 80, 30)
-        circle(A.x, A.y, 13)
-        circle(B.x, B.y, 13)
-        circle(C.x, C.y, 13)
-
-        stroke(341, 83, 81)
-        circle(D.x, D.y, 13)
-        circle(E.x, E.y, 13)
-
         stroke(0, 0, 100)
         circle(P.x, P.y, 16)
+
     }
 
     draw() {

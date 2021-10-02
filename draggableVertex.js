@@ -58,7 +58,7 @@ class draggableVertex {
         }
 
         if (this.hovering) {
-            fill(209, 80, 40)
+            fill(209, 80, 60)
         }
 
         circle(this.x, this.y, this.r*2)
