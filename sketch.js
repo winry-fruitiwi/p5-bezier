@@ -164,44 +164,66 @@ class Cubic_Bezier_Example {
         // we'll iterate using a certain t-value between
         // 0 and 1 using a for loop
 
+        let A, B, C, D, E, P
+
         noFill()
         beginShape()
-        for (let t = 0; t < 1.005; t += 0.005) {
+        for (let t = 0; t < abs(sin(frameCount/100)); t += 0.001) {
             // we lerp between the first two points, or
             // the first anchor point and the control point
-            let l1 = wlerp2D(p1, p2, t);
+            A = wlerp2D(p1, p2, t);
             // then between the second two points, or
             // the control point and second control point
-            let l2 = wlerp2D(p2, p3, t);
+            B = wlerp2D(p2, p3, t);
             // and now between p3 and p4.
-            let l3 = wlerp2D(p3, p4, t);
+            C = wlerp2D(p3, p4, t);
 
             // and then between l1 and l2!
-            let l4 = wlerp2D(l1, l2, t);
+            D = wlerp2D(A, B, t);
             // to stretch it further: go between l2 and l3! O.o
-            let l5 = wlerp2D(l2, l3, t);
+            E = wlerp2D(B, C, t);
 
             // We are done! l4 and l5.
-            let l6 = wlerp2D(l4, l5, t);
+            P = wlerp2D(D, E, t);
 
             // now we draw a point at l6! We'll also make lines from
             // each control point.
             strokeWeight(3)
-            vertex(l6.x, l6.y)
-
+            vertex(P.x, P.y)
         }
+
         endShape()
         strokeWeight(1)
+        stroke(201, 68, 97)
+        line(A.x, A.y, B.x, B.y)
+        line(B.x, B.y, C.x, C.y)
+
+        stroke(341, 83, 81)
+        line(D.x, D.y, E.x, E.y)
+
+        strokeWeight(1)
+        stroke(100, 0, 100)
         line(p1.x, p1.y, p2.x, p2.y)
         line(p2.x, p2.y, p3.x, p3.y)
         line(p3.x, p3.y, p4.x, p4.y)
 
+        strokeWeight(3)
+        stroke(201, 68, 97)
+        fill(209, 80, 30)
+        circle(A.x, A.y, 13)
+        circle(B.x, B.y, 13)
+        circle(C.x, C.y, 13)
+
+        stroke(341, 83, 81)
+        circle(D.x, D.y, 13)
+        circle(E.x, E.y, 13)
+
+        stroke(0, 0, 100)
+        circle(P.x, P.y, 16)
     }
 
     draw() {
         background(209, 80, 30)
-
-        // Let's see what happens with the bezier example!
         strokeWeight(3)
         // The fill is way too bright!
         noFill()
@@ -215,12 +237,12 @@ class Cubic_Bezier_Example {
         //        this.d.x, this.d.y)
         stroke(0, 0, 100)
 
+        this.cubic_bezier(vertices[0], vertices[1], vertices[2], vertices[3])
 
+        strokeWeight(3)
         for (let vertex of vertices) {
             vertex.show(mouseX, mouseY)
         }
-
-        this.cubic_bezier(vertices[0], vertices[1], vertices[2], vertices[3])
     }
 }
 

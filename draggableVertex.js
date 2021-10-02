@@ -42,7 +42,7 @@ class draggableVertex {
     // (x, y) refers to pointer_x and pointer_y, the coordinates of the
     // mouse dragging; this method will be called as show(mouseX, mouseY)
     show(x, y) {
-        fill(100, 20)
+        fill(209, 80, 30)
         stroke(255)
 
         // have I been clicked? /scared
@@ -58,7 +58,7 @@ class draggableVertex {
         }
 
         if (this.hovering) {
-            fill(100, 10)
+            fill(209, 80, 40)
         }
 
         circle(this.x, this.y, this.r*2)
