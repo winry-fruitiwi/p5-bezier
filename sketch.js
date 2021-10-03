@@ -165,10 +165,19 @@ class Cubic_Bezier_Example {
         // 0 and 1 using a for loop
 
         let A, B, C, D, E, P
+        let line_alpha = 100
         let t = abs(sin(frameCount/100))
+
         fill(209, 80, 30)
 
-        
+        // the lines should be hiding when it gets close to the end.
+        if (t * 100 < 5) {
+            line_alpha = map(t * 100, 5, 0, 90, 0)
+        }
+
+        else if (t * 100 > 95) {
+            line_alpha = map(t * 100, 95, 100, 90, 0)
+        }
 
         // we lerp between the first two points, or
         // the first anchor point and the control point
@@ -187,27 +196,31 @@ class Cubic_Bezier_Example {
         // We are done! l4 and l5.
         P = wlerp2D(D, E, t);
 
+        // these are the lines between each point.
         strokeWeight(1)
         stroke(100, 0, 100)
         line(p1.x, p1.y, p2.x, p2.y)
         line(p2.x, p2.y, p3.x, p3.y)
         line(p3.x, p3.y, p4.x, p4.y)
 
+        // now for the blue lerp lines
         strokeWeight(2)
-
-        stroke(201, 68, 97)
+        stroke(201, 68, 97, line_alpha)
         line(A.x, A.y, B.x, B.y)
         line(B.x, B.y, C.x, C.y)
 
-        stroke(341, 83, 81)
+        // and the red one
+        stroke(341, 83, 81, line_alpha)
         line(D.x, D.y, E.x, E.y)
-
         strokeWeight(3)
         stroke(201, 68, 97)
+
+        // and finally the circles for all of the points.
         fill(209, 80, 30)
         circle(A.x, A.y, 13)
         circle(B.x, B.y, 13)
         circle(C.x, C.y, 13)
+
 
         stroke(341, 83, 81)
         circle(D.x, D.y, 13)
@@ -241,10 +254,10 @@ class Cubic_Bezier_Example {
         }
         endShape()
 
+        // we want a big vertex at P!
         fill(209, 80, 30)
         stroke(0, 0, 100)
         circle(P.x, P.y, 16)
-
     }
 
     draw() {
